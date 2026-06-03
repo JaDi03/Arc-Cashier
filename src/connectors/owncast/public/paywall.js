@@ -22,7 +22,7 @@ function initPaywall() {
         const link = document.createElement('link');
         link.id = 'arc-paywall-css';
         link.rel = 'stylesheet';
-        link.href = '/paywall.css'; // Served by our proxy
+        link.href = '/owncast-assets/paywall.css'; // Served by our proxy
         document.head.appendChild(link);
     }
 
@@ -94,7 +94,7 @@ async function handleFundSession() {
         const viewerId = localStorage.getItem('owncast_viewer_id');
         
         // Send the ephemeral private key to the Sidecar so it can deposit to Gateway and settle later
-        const response = await fetch('/v1/webhooks/register-session', {
+        const response = await fetch('/api/core/register-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
