@@ -1,0 +1,31 @@
+{
+  "name": "arc-cashier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@circle-fin/x402-batching": "^3.0.4",
+    "@x402/core": "^2.14.0",
+    "@x402/evm": "^2.14.0",
+    "@x402/express": "^2.14.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "viem": "^2.52.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
