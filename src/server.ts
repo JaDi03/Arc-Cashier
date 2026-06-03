@@ -6,7 +6,7 @@ import webhooksRouter from './routes/webhooks';
 export function createServer() {
     const app = express();
 
-    // Middlewares base
+    // Base middlewares
     app.use(cors());
     app.use(bodyParser.json());
 
@@ -16,7 +16,7 @@ export function createServer() {
         next();
     });
 
-    // Rutas
+    // Routes
     app.use('/v1/webhooks', webhooksRouter);
 
     // Healthcheck

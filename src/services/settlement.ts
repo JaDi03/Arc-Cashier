@@ -4,7 +4,7 @@ import type { BatchEvmSigner } from './wallet';
 
 /**
  * Settlement Service
- * Interactúa con el API de Circle Gateway para liquidar firmas matemáticas en lotes on-chain.
+ * Interacts with the Circle Gateway API to settle mathematical signatures in batches on-chain.
  */
 export class SettlementService {
     private facilitator: BatchFacilitatorClient;
@@ -14,20 +14,20 @@ export class SettlementService {
     }
 
     /**
-     * Formatea USDC a la unidad base (6 decimales) requerida por el contrato
+     * Formats USDC to the base unit (6 decimals) required by the contract
      */
     private toBaseUnits(usdcAmount: number): string {
         return Math.ceil(usdcAmount * 1_000_000).toString();
     }
 
     /**
-     * Liquida el consumo de una sesión firmando y enviando el pago a Gateway.
+     * Settles the session consumption by signing and sending the payment to Gateway.
      */
     public async settleSession(signer: BatchEvmSigner, amountUsdc: number, sellerAddress: string): Promise<boolean> {
         const gatewaySigner = new BatchEvmScheme(signer);
         
         try {
-            // Obtenemos las configuraciones soportadas por Gateway (Testnet: Base Sepolia)
+            // Get configurations supported by Gateway (Testnet: Base Sepolia)
             const support = await this.facilitator.getSupported();
             const gatewaySupport = support.kinds.find(k => k.extra && k.extra.name === "GatewayWalletBatched" && k.network === "eip155:84532");
             
@@ -35,30 +35,30 @@ export class SettlementService {
                 throw new Error("No Gateway support found for Base Sepolia");
             }
 
-            // Construimos los requerimientos exactos de este cobro
+            // Construct the exact requirements for this payment
             const requirements = {
-                kind: `eip155:84532:usdc`, // El SDK internamente lo mapea a la dirección correcta del token
+                kind: `eip155:84532:usdc`, // The SDK internally maps this to the correct token address
                 amount: this.toBaseUnits(amountUsdc),
                 recipient: sellerAddress,
                 extra: gatewaySupport.extra
             };
 
-            // Creamos la firma EIP-3009 localmente usando la llave de sesión
+            // Create the EIP-3009 signature locally using the session key
             const payload = await gatewaySigner.createPaymentPayload(2, requirements as any);
             
-            // Enviamos la firma a Gateway para que la recolecte y la liquide en lote
+            // Send the signature to Gateway to be collected and settled in a batch
             const settlement = await this.facilitator.settle(payload as any, requirements as any);
             
             if (settlement.success) {
-                console.log(`[Settlement] ✅ Liquidación exitosa de $${amountUsdc.toFixed(6)} USDC. Hash: ${settlement.transaction}`);
+                console.log(`[Settlement] ✅ Successful settlement of $${amountUsdc.toFixed(6)} USDC. Hash: ${settlement.transaction}`);
                 return true;
             } else {
-                console.error(`[Settlement] ❌ Error en liquidación: ${settlement.errorReason}`);
+                console.error(`[Settlement] ❌ Settlement error: ${settlement.errorReason}`);
                 return false;
             }
 
         } catch (error: any) {
-            console.error(`[Settlement] ❌ Fallo crítico liquidando la sesión:`, error.message);
+            console.error(`[Settlement] ❌ Critical failure settling the session:`, error.message);
             return false;
         }
     }

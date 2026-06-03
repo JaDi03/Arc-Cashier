@@ -1,4 +1,4 @@
-// Tipos de Owncast basados en services/webhooks/webhooks.go
+// Owncast types based on services/webhooks/webhooks.go
 
 export interface OwncastUser {
     id: string;
@@ -9,7 +9,7 @@ export interface OwncastUser {
 }
 
 export interface BaseWebhookData {
-    // Campos comunes a todos los webhooks de Owncast
+    // Common fields for all Owncast webhooks
 }
 
 export interface WebhookUserJoinedEventData extends BaseWebhookData {
@@ -24,8 +24,8 @@ export interface WebhookUserPartEventData extends BaseWebhookData {
     user: OwncastUser;
 }
 
-// Payload estándar que Owncast envía al servidor webhook
+// Standard payload sent by Owncast to the webhook server
 export interface OwncastWebhookPayload {
-    type: string; // ej. 'USER_JOINED' | 'USER_PARTED' | 'CHAT'
+    type: string; // e.g., 'USER_JOINED' | 'USER_PARTED' | 'CHAT'
     eventData: WebhookUserJoinedEventData | WebhookUserPartEventData | any;
 }

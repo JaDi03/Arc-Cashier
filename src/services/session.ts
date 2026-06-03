@@ -2,34 +2,34 @@ import { walletService } from './wallet';
 import { settlementService } from './settlement';
 
 /**
- * Servicio de Gestión de Sesiones de Streaming (Post-pago)
+ * Streaming Session Management Service (Post-paid)
  */
 export class SessionService {
-    // Memoria en RAM para las sesiones en curso. 
-    // En producción esto debe migrar a Redis o PostgreSQL.
+    // In-memory storage for active sessions.
+    // In production, this should migrate to Redis or PostgreSQL.
     private activeSessions = new Map<string, number>();
     
-    // Configuración Financiera
-    private readonly RATE_PER_SECOND = 0.0001; // USDC por segundo
-    // La dirección de la plataforma/creador que recibe los pagos
+    // Financial Configuration
+    private readonly RATE_PER_SECOND = 0.0001; // USDC per second
+    // The address of the platform/creator receiving the payments
     private readonly SELLER_ADDRESS = process.env.SELLER_ADDRESS || "0x9876543210987654321098765432109876543210"; 
 
     /**
-     * Registra el inicio de una sesión de un usuario.
+     * Records the start of a user session.
      */
     public recordJoin(userId: string): void {
         this.activeSessions.set(userId, Date.now());
-        console.log(`[Session] 🟢 Sesión iniciada para el usuario: ${userId}`);
+        console.log(`[Session] 🟢 Session started for user: ${userId}`);
     }
 
     /**
-     * Registra el fin de la sesión, calcula el costo total y liquida el pago.
+     * Records the end of the session, calculates the total cost, and settles the payment.
      */
     public async recordPartAndSettle(userId: string): Promise<void> {
         const joinedTime = this.activeSessions.get(userId);
         
         if (!joinedTime) {
-            console.warn(`[Session] ⚠️ Usuario ${userId} desconectado, pero no hay registro de inicio. Ignorando.`);
+            console.warn(`[Session] ⚠️ User ${userId} parted, but no join record found. Ignoring.`);
             return;
         }
 
@@ -39,21 +39,21 @@ export class SessionService {
         const durationSeconds = Math.ceil((partedTime - joinedTime) / 1000);
         const amountUsdc = durationSeconds * this.RATE_PER_SECOND;
 
-        console.log(`[Session] 🔴 Usuario ${userId} desconectado. Tiempo visto: ${durationSeconds}s. Cobro: $${amountUsdc.toFixed(6)} USDC.`);
+        console.log(`[Session] 🔴 User ${userId} parted. Watch time: ${durationSeconds}s. Charge: $${amountUsdc.toFixed(6)} USDC.`);
 
         if (amountUsdc <= 0) {
-            console.log(`[Session] ℹ️ El monto es demasiado bajo para cobrar.`);
+            console.log(`[Session] ℹ️ Amount is too low to charge.`);
             return;
         }
 
         try {
-            // 1. Obtener la llave de sesión (delegada) del usuario
+            // 1. Get the user's delegated session key
             const signer = await walletService.getSessionSignerForUser(userId);
 
-            // 2. Ejecutar la liquidación on-chain con Gateway
+            // 2. Execute on-chain settlement with Gateway
             await settlementService.settleSession(signer, amountUsdc, this.SELLER_ADDRESS);
         } catch (error: any) {
-            console.error(`[Session] ❌ Fallo al procesar el cierre de sesión para ${userId}: ${error.message}`);
+            console.error(`[Session] ❌ Failed to process session close for ${userId}: ${error.message}`);
         }
     }
 }

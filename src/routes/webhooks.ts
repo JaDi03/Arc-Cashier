@@ -20,8 +20,8 @@ router.post('/owncast', async (req: Request, res: Response) => {
     } 
     else if (payload.type === 'USER_PARTED') {
         const eventData = payload.eventData as WebhookUserPartEventData;
-        // Lanzamos la promesa pero no bloqueamos la respuesta al Webhook
-        // Owncast necesita saber que recibimos el webhook rápido (fire & forget)
+        // Launch the promise but don't block the webhook response
+        // Owncast needs to know we received the webhook quickly (fire & forget)
         sessionService.recordPartAndSettle(eventData.user.id).catch(console.error);
         return res.json({ status: "processing_settlement" });
     }
